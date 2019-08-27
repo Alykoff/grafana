@@ -291,7 +291,7 @@ describe('runQueriesBatchEpic', () => {
             state: LoadingState.Loading, // fake just to setup and test unsubscribe
             unsubscribe,
           })
-          .whenActionIsDispatched(resetExploreAction()) // unsubscribes the observable
+          .whenActionIsDispatched(resetExploreAction({})) // unsubscribes the observable
           .whenQueryReceivesResponse(response) // new updates will not reach anywhere
           .thenResultingActionsEqual(
             queryStartAction({ exploreId }),

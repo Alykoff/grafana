@@ -31,6 +31,7 @@ import {
   queryStartAction,
   runQueriesAction,
   changeRangeAction,
+  clearOriginAction,
 } from './actionTypes';
 import { reducerFactory } from 'app/core/redux';
 import {
@@ -205,6 +206,15 @@ export const itemReducer = reducerFactory<ExploreItemState>({} as ExploreItemSta
         queries: queries.slice(),
         showingStartPage: Boolean(state.StartPage),
         queryKeys: getQueryKeys(queries, state.datasourceInstance),
+      };
+    },
+  })
+  .addMapper({
+    filter: clearOriginAction,
+    mapper: (state): ExploreItemState => {
+      return {
+        ...state,
+        originPanelId: undefined,
       };
     },
   })
@@ -648,7 +658,18 @@ export const exploreReducer = (state = initialExploreState, action: HigherOrderA
     }
 
     case ActionTypes.ResetExplore: {
-      return initialExploreState;
+      if (action.payload.force || !Number.isInteger(state.left.originPanelId)) {
+        return initialExploreState;
+      }
+
+      return {
+        ...initialExploreState,
+        left: {
+          ...initialExploreItemState,
+          queries: state.left.queries,
+          originPanelId: state.left.originPanelId,
+        },
+      };
     }
 
     case updateLocation.type: {

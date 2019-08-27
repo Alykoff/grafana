@@ -78,6 +78,10 @@ export interface ClearQueriesPayload {
   exploreId: ExploreId;
 }
 
+export interface ClearOriginPayload {
+  exploreId: ExploreId;
+}
+
 export interface ClearRefreshIntervalPayload {
   exploreId: ExploreId;
 }
@@ -269,6 +273,10 @@ export interface UpdateTimeRangePayload {
   absoluteRange?: AbsoluteTimeRange;
 }
 
+export interface ResetExplorePayload {
+  force?: boolean;
+}
+
 /**
  * Adds a query row after the row with the given index.
  */
@@ -307,6 +315,11 @@ export const changeRefreshIntervalAction = actionCreatorFactory<ChangeRefreshInt
  * Clear all queries and results.
  */
 export const clearQueriesAction = actionCreatorFactory<ClearQueriesPayload>('explore/CLEAR_QUERIES').create();
+
+/**
+ * Clear origin panel id.
+ */
+export const clearOriginAction = actionCreatorFactory<ClearOriginPayload>('explore/CLEAR_ORIGIN').create();
 
 /**
  * Highlight expressions in the log results
@@ -440,7 +453,7 @@ export const toggleLogLevelAction = actionCreatorFactory<ToggleLogLevelPayload>(
 /**
  * Resets state for explore.
  */
-export const resetExploreAction = noPayloadActionCreatorFactory('explore/RESET_EXPLORE').create();
+export const resetExploreAction = actionCreatorFactory<ResetExplorePayload>('explore/RESET_EXPLORE').create();
 export const queriesImportedAction = actionCreatorFactory<QueriesImportedPayload>('explore/QueriesImported').create();
 export const testDataSourcePendingAction = actionCreatorFactory<TestDatasourcePendingPayload>(
   'explore/TEST_DATASOURCE_PENDING'

@@ -23,15 +23,10 @@ import { LoadingState } from '@grafana/data';
 import { PluginHelp } from 'app/core/components/PluginHelp/PluginHelp';
 import { PanelQueryRunnerFormat } from '../state/PanelQueryRunner';
 import { Unsubscribable } from 'rxjs';
-import { StoreState } from 'app/types';
-import { connectWithStore } from 'app/core/utils/connectWithReduxStore';
-import { mergeExploreQueries } from '../utils/panel';
 
 interface Props {
   panel: PanelModel;
   dashboard: DashboardModel;
-  fromExplore?: boolean;
-  queryRowCount?: number;
 }
 
 interface State {
@@ -63,15 +58,10 @@ export class QueriesTab extends PureComponent<Props, State> {
   };
 
   componentDidMount() {
-    const { panel, fromExplore, queryRowCount } = this.props;
+    const { panel } = this.props;
     const queryRunner = panel.getQueryRunner();
 
     this.querySubscription = queryRunner.subscribe(this.panelDataObserver, PanelQueryRunnerFormat.both);
-
-    panel.targets = mergeExploreQueries(panel, fromExplore, queryRowCount);
-
-    panel.refresh();
-    this.forceUpdate();
   }
 
   componentWillUnmount() {
@@ -273,9 +263,4 @@ export class QueriesTab extends PureComponent<Props, State> {
   }
 }
 
-const mapStateToProps = (state: StoreState) => ({
-  fromExplore: !!state.location.query.fromExplore,
-  queryRowCount: state.location.query.queryRowCount,
-});
-
-export default connectWithStore(QueriesTab, mapStateToProps);
+export default QueriesTab;

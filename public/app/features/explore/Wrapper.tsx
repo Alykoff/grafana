@@ -17,7 +17,7 @@ interface WrapperProps {
 
 export class Wrapper extends Component<WrapperProps> {
   componentWillUnmount() {
-    this.props.resetExploreAction();
+    this.props.resetExploreAction({});
   }
 
   render() {

@@ -1,6 +1,7 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import { hot } from 'react-hot-loader';
+import classNames from 'classnames';
 
 import { ExploreId, ExploreMode } from 'app/types/explore';
 import { DataSourceSelectItem, ToggleButtonGroup, ToggleButton, DataQuery, Tooltip, ButtonSelect } from '@grafana/ui';
@@ -15,6 +16,7 @@ import {
   splitOpen,
   changeRefreshInterval,
   changeMode,
+  clearOrigin,
 } from './state/actions';
 
 import { getTimeZone } from '../profile/state/selectors';
@@ -86,6 +88,7 @@ interface DispatchProps {
   split: typeof splitOpen;
   changeRefreshInterval: typeof changeRefreshInterval;
   changeMode: typeof changeMode;
+  clearOrigin: typeof clearOrigin;
 }
 
 type Props = StateProps & DispatchProps & OwnProps;
@@ -118,19 +121,23 @@ export class UnConnectedExploreToolbar extends PureComponent<Props, {}> {
   };
 
   returnToPanel = async ({ withChanges = false } = {}) => {
-    const { originPanelId, queries } = this.props;
+    const { originPanelId } = this.props;
 
     const dashboardSrv = getDashboardSrv();
     const dash = dashboardSrv.getCurrent();
-    const withChangesParams = withChanges ? { fromExplore: true, queryRowCount: queries.length } : {};
+
     const titleSlug = kbn.slugifyForUrl(dash.title);
+
+    if (!withChanges) {
+      this.props.clearOrigin();
+    }
+
     getLocationSrv().update({
       path: `/d/${dash.uid}/:${titleSlug}`,
       query: {
         fullscreen: true,
         edit: true,
         panelId: originPanelId,
-        ...withChangesParams,
       },
     });
   };
@@ -156,7 +163,13 @@ export class UnConnectedExploreToolbar extends PureComponent<Props, {}> {
       originPanelId,
     } = this.props;
 
-    const originDashboardIsEditable = originPanelId && getDashboardSrv().getCurrent().meta.canSave;
+    const curDashboard = getDashboardSrv().getCurrent();
+    const originDashboardIsEditable =
+      Number.isInteger(originPanelId) && curDashboard.meta.canSave && !curDashboard.meta.provisioned;
+    const panelReturnClasses = classNames('btn', 'navbar-button', {
+      'btn--radius-right-0': originDashboardIsEditable,
+      'navbar-button navbar-button--border-right-0': originDashboardIsEditable,
+    });
 
     return (
       <div className={splitted ? 'explore-toolbar splitted' : 'explore-toolbar'}>
@@ -213,13 +226,10 @@ export class UnConnectedExploreToolbar extends PureComponent<Props, {}> {
               </div>
             ) : null}
 
-            {originPanelId && !splitted && (
+            {Number.isInteger(originPanelId) && !splitted && (
               <div className="explore-toolbar-content-item">
                 <Tooltip content={'Return to panel'} placement="bottom">
-                  <button
-                    className="btn btn--radius-right-0 navbar-button navbar-button--border-right-0"
-                    onClick={() => this.returnToPanel()}
-                  >
+                  <button className={panelReturnClasses} onClick={() => this.returnToPanel()}>
                     <i className="fa fa-arrow-left" />
                   </button>
                 </Tooltip>
@@ -360,6 +370,7 @@ const mapDispatchToProps: DispatchProps = {
   closeSplit: splitClose,
   split: splitOpen,
   changeMode: changeMode,
+  clearOrigin,
 };
 
 export const ExploreToolbar = hot(module)(
